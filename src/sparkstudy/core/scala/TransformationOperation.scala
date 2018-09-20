@@ -8,7 +8,9 @@ import org.apache.spark.{SparkConf, SparkContext}
 object TransformationOperation {
   def main(args: Array[String]): Unit = {
 //    filter()
-    flatMap()
+//    flatMap()
+//    groupByKey()
+    reduceByKey()
   }
 
   def map(): Unit = {
@@ -38,5 +40,39 @@ object TransformationOperation {
     val lines = sc.parallelize(lineArray, 1)
     val words = lines.flatMap(line => line.split(" "))
     words.foreach(println)
+  }
+
+  def groupByKey(): Unit = {
+    val conf = new SparkConf().setAppName("groupByKey").setMaster("local")
+    val sc = new SparkContext(conf)
+    val scoreList = Array(
+      ("class1", 80),
+      ("class2", 75),
+      ("class1", 90),
+      ("class2", 65)
+    )
+    val scores = sc.parallelize(scoreList, 1)
+    val groupedScores = scores.groupByKey()
+    groupedScores.foreach(t => {
+      println("class: " + t._1 + " ")
+      t._2.foreach(println)
+      println("====================")
+    })
+  }
+
+  def reduceByKey(): Unit = {
+    val conf = new SparkConf().setAppName("reduceByKey").setMaster("local")
+    val sc = new SparkContext(conf)
+    val scoreList = Array(
+      ("class1", 80),
+      ("class2", 75),
+      ("class1", 90),
+      ("class2", 65)
+    )
+    val scores = sc.parallelize(scoreList, 1)
+    val totalScores = scores.reduceByKey(_ + _)
+    totalScores.foreach(
+      t => println(t._1 + ": " + t._2)
+    )
   }
 }

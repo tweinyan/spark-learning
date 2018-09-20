@@ -6,6 +6,7 @@ import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.Function;
+import org.apache.spark.api.java.function.Function2;
 import org.apache.spark.api.java.function.VoidFunction;
 import scala.Tuple2;
 
@@ -21,7 +22,8 @@ public class TransformationOperation {
 //        map();
 //        filter);
 //        flatMap();
-        groupByKey();
+//        groupByKey();
+        reduceByKey();
     }
     /**
      * map算子
@@ -165,6 +167,46 @@ public class TransformationOperation {
             System.out.println("====================");
         });
 
+        sc.close();
+    }
+
+    /**
+     * reduceByKey案例，按班级对成绩求和
+     */
+    private static void reduceByKey() {
+        SparkConf conf = new SparkConf().setAppName("reduceByKey").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        // 模拟集合
+        List<Tuple2<String, Integer>> scoreList = Arrays.asList(
+                new Tuple2<>("class1", 80),
+                new Tuple2<>("class2", 75),
+                new Tuple2<>("class1", 90),
+                new Tuple2<>("class2", 65)
+        );
+
+        // 并行化集合，创建JavaPairRDD
+        JavaPairRDD<String, Integer> scores = sc.parallelizePairs(scoreList);
+
+        // 针对scores RDD，执行reduceByKey算子
+        // reduceByKey， 接收的参数是Function2类型，它有三个泛型参数，实际上代表了三个值
+        // 第一个泛型类型和第二个泛型类型，代表call()方法的两个传入参数的类型
+            // 因此对每个key进行reduce，都会依次将第一个、第二个value传入，将值再与第三个value传入
+            // 因此此处，会自动定义两个泛型类型，代表call()方法的两个传入参数的类型
+        // 第三个泛型类型，代表了每次reduce操作返回值的类型，默认也是与原始RDD的value类型相同的
+        // reduceByKey算子返回的RDD，还是JavaPairRDD<key, value>
+        JavaPairRDD<String, Integer> totalScores = scores.reduceByKey(
+                new Function2<Integer, Integer, Integer>() {
+                    @Override
+                    public Integer call(Integer v1, Integer v2) throws Exception {
+                        return v1 + v2;
+                    }
+                }
+        );
+
+        totalScores.foreach(
+                t -> System.out.println(t._1 + ": " + t._2)
+        );
         sc.close();
     }
 }
