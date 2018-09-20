@@ -23,7 +23,8 @@ public class TransformationOperation {
 //        filter);
 //        flatMap();
 //        groupByKey();
-        reduceByKey();
+//        reduceByKey();
+        sortByKey();
     }
     /**
      * map算子
@@ -207,6 +208,35 @@ public class TransformationOperation {
         totalScores.foreach(
                 t -> System.out.println(t._1 + ": " + t._2)
         );
+        sc.close();
+    }
+
+    // sortByKey案例：按照学生分数进行排序
+    private static void sortByKey() {
+        SparkConf conf = new SparkConf().setAppName("sortByKey").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        // 模拟集合
+        List<Tuple2<Integer, String>> scoreList = Arrays.asList(
+                new Tuple2<>(65, "leo"),
+                new Tuple2<>(50, "Tom"),
+                new Tuple2<>(100, "marry"),
+                new Tuple2<>(80, "jack")
+        );
+
+        JavaPairRDD<Integer, String> scores = sc.parallelizePairs(scoreList);
+
+        // 对scores RDD执行sortByKey算子
+        // sortByKey其实就是根据key进行排序，可以手动指定升序，或者降序
+        // 返回的还是JavaPairRDD，其中的元素内容都是和原始的RDD一模一样的
+        // 但是就是RDD中的元素顺序不同了
+//        JavaPairRDD<Integer, String> sortedScores = scores.sortByKey();
+        JavaPairRDD<Integer, String> sortedScores = scores.sortByKey(false);
+
+        sortedScores.foreach(
+                t -> System.out.println(t._1 + ": " + t._2)
+        );
+
         sc.close();
     }
 }

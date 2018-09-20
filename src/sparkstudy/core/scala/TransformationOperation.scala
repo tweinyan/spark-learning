@@ -10,7 +10,8 @@ object TransformationOperation {
 //    filter()
 //    flatMap()
 //    groupByKey()
-    reduceByKey()
+//    reduceByKey()
+    sortByKey()
   }
 
   def map(): Unit = {
@@ -74,5 +75,22 @@ object TransformationOperation {
     totalScores.foreach(
       t => println(t._1 + ": " + t._2)
     )
+  }
+
+  def sortByKey(): Unit = {
+    val conf = new SparkConf().setAppName("sortByKey").setMaster("local")
+    val sc = new SparkContext(conf)
+    val scoreList = Array(
+      (65, "leo"),
+      (50, "Tom"),
+      (100, "marry"),
+      (80, "jack")
+    )
+
+    val scores = sc.parallelize(scoreList, 1)
+    val sortedScores = scores.sortByKey()
+
+    sortedScores.foreach(t => println(t._1 + ": " + t._2))
+
   }
 }
