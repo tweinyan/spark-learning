@@ -1,0 +1,1 @@
+./bin/spark-submit  --master local /Users/tweinyan/IdeaProjects/sparktest/out/artifacts/sparktest_jar/sparktest.jar
