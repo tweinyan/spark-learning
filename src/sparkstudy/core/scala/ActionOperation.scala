@@ -7,7 +7,8 @@ import org.apache.spark.{SparkConf, SparkContext}
   */
 object ActionOperation {
   def main(args: Array[String]): Unit = {
-    reduce()
+//    reduce()
+    collect()
   }
 
   def reduce(): Unit = {
@@ -17,5 +18,16 @@ object ActionOperation {
     val numbers = sc.parallelize(numberList)
     val sum = numbers.reduce(_ + _)
     println(sum)
+  }
+
+  def collect(): Unit = {
+    val conf = new SparkConf().setAppName("reduce").setMaster("local")
+    val sc = new SparkContext(conf)
+    val numberList = Array(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+    val numbers = sc.parallelize(numberList)
+
+    val doubleNumbers = numbers.map(num => num * 2)
+    val doubleNumberList = doubleNumbers.collect()
+    doubleNumberList.foreach(println)
   }
 }
