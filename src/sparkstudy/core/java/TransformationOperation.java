@@ -24,7 +24,9 @@ public class TransformationOperation {
 //        flatMap();
 //        groupByKey();
 //        reduceByKey();
-        sortByKey();
+//        sortByKey();
+//        join();
+        cogroup();
     }
     /**
      * map算子
@@ -236,6 +238,93 @@ public class TransformationOperation {
         sortedScores.foreach(
                 t -> System.out.println(t._1 + ": " + t._2)
         );
+
+        sc.close();
+    }
+
+    /**
+     * join案例：打印学生成绩
+     */
+    private static void join() {
+        SparkConf conf = new SparkConf().setAppName("join").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        // 模拟集合
+        List<Tuple2<Integer, String>> studentList = Arrays.asList(
+                new Tuple2<>(1, "leo"),
+                new Tuple2<>(2, "jack"),
+                new Tuple2<>(3, "Tom")
+        );
+
+        List<Tuple2<Integer, Integer>> scoreList = Arrays.asList(
+                new Tuple2<>(1, 100),
+                new Tuple2<>(2, 90),
+                new Tuple2<>(3, 60)
+        );
+
+        // 并行化两个RDD
+        JavaPairRDD<Integer, String> students = sc.parallelizePairs(studentList);
+        JavaPairRDD<Integer, Integer>  scores = sc.parallelizePairs(scoreList);
+
+
+        // 使用join算子关联两个RDD
+        // join以后，还是会根据key进行join，并返回JavaPairRDD
+        // 但是JavaPairRDD的第一个泛型类型，是之前两个JavaPairRDD的key的类型，因为是通过key进行join的
+        // 第二个泛型类型是Tuple2<v1, v2>的类型，Tuple2的两个泛型分别为原始RDD的value的类型
+        // join，就返回的RDD的每一个元素，就是通过key join 上的一个pair
+        // 什么意思呢？比如有(1, 1) (1, 2) (1, 3) 的一个RDD
+            // 还有一个(1, 4) (2, 1) (2, 2) 的RDD
+            // join以后，实际会得到(1, (1, 4)) (1, (2, 4)) (1, (3, 4))
+        JavaPairRDD<Integer, Tuple2<String, Integer>> studentsScores =  students.join(scores);
+
+        studentsScores.foreach(t -> {
+            System.out.println("student id: " + t._1);
+            System.out.println("student name: " + t._2._1);
+            System.out.println("student score: " + t._2._2);
+            System.out.println("====================");
+        });
+
+        sc.close();
+    }
+
+    /**
+     * cogroup 案例
+     */
+    private static void cogroup() {
+        SparkConf conf = new SparkConf().setAppName("cogroup").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        // 模拟集合
+        List<Tuple2<Integer, String>> studentList = Arrays.asList(
+                new Tuple2<>(1, "leo"),
+                new Tuple2<>(2, "jack"),
+                new Tuple2<>(3, "Tom")
+        );
+
+        List<Tuple2<Integer, Integer>> scoreList = Arrays.asList(
+                new Tuple2<>(1, 100),
+                new Tuple2<>(2, 90),
+                new Tuple2<>(3, 60),
+                new Tuple2<>(1, 70),
+                new Tuple2<>(2, 80),
+                new Tuple2<>(3, 50)
+        );
+
+        // 并行化两个RDD
+        JavaPairRDD<Integer, String> students = sc.parallelizePairs(studentList);
+        JavaPairRDD<Integer, Integer>  scores = sc.parallelizePairs(scoreList);
+
+
+        // cogroup与join不同
+        // 相当于是，一个key join上所有的value，都给放到一个Iterable里面去了
+        JavaPairRDD<Integer, Tuple2<Iterable<String>, Iterable<Integer>>> studentsScores =  students.cogroup(scores);
+
+        studentsScores.foreach(t -> {
+            System.out.println("student id: " + t._1);
+            System.out.println("student name: " + t._2._1);
+            System.out.println("student score: " + t._2._2);
+            System.out.println("=====================");
+        });
 
         sc.close();
     }

@@ -11,7 +11,9 @@ object TransformationOperation {
 //    flatMap()
 //    groupByKey()
 //    reduceByKey()
-    sortByKey()
+//    sortByKey()
+//    join()
+    cogroup()
   }
 
   def map(): Unit = {
@@ -91,6 +93,60 @@ object TransformationOperation {
     val sortedScores = scores.sortByKey()
 
     sortedScores.foreach(t => println(t._1 + ": " + t._2))
+  }
 
+  def join(): Unit = {
+    val conf = new SparkConf().setAppName("join").setMaster("local")
+    val sc = new SparkContext(conf)
+    val studentList = Array(
+      (1, "leo"),
+      (2, "jack"),
+      (3, "Tom")
+    )
+    val scoreList = Array(
+      (1, 100),
+      (2, 90),
+      (3, 60)
+    )
+    val students = sc.parallelize(studentList, 1)
+    val scores = sc.parallelize(scoreList, 1)
+
+    val studentsScores = students.join(scores)
+
+    studentsScores.foreach(t => {
+      println("student id: " + t._1)
+      println("student name: " + t._2._1)
+      println("student score: " + t._2._2)
+      println("====================")
+    })
+  }
+
+  def cogroup(): Unit = {
+    val conf = new SparkConf().setAppName("cogroup").setMaster("local")
+    val sc = new SparkContext(conf)
+    val studentList = Array(
+      (1, "leo"),
+      (2, "jack"),
+      (3, "Tom")
+    )
+    val scoreList = Array(
+      (1, 100),
+      (2, 90),
+      (3, 60),
+      (1, 70),
+      (2, 80),
+      (3, 50)
+    )
+    val students = sc.parallelize(studentList, 1)
+    val scores = sc.parallelize(scoreList, 1)
+
+    val studentsScores = students.cogroup(scores)
+
+    studentsScores.foreach(t => {
+      println("student id: " + t._1)
+      println("student name: " + t._2._1)
+      println("student score: " + t._2._2)
+      println("====================")
+    })
   }
 }
