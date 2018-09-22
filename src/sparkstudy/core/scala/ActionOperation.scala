@@ -27,7 +27,10 @@ object ActionOperation {
     val numbers = sc.parallelize(numberList)
 
     val doubleNumbers = numbers.map(num => num * 2)
-    val doubleNumberList = doubleNumbers.collect()
-    doubleNumberList.foreach(println)
+    val doubleNumberArray = doubleNumbers.collect()
+//    doubleNumberList.foreach(println)
+    for(num <- doubleNumberArray) {
+      println(num)
+    }
   }
 }
