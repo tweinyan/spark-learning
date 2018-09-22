@@ -1,13 +1,16 @@
 package sparkstudy.core.java;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.Function2;
+import scala.Tuple2;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 /**
  * action 操作
@@ -16,7 +19,10 @@ import java.util.List;
 public class ActionOperation {
     public static void main(String[] args) {
 //        reduce();
-        collect();
+//        collect();
+//        count();
+//        take();
+        countByKey();
     }
 
     private static void reduce() {
@@ -52,10 +58,9 @@ public class ActionOperation {
 
     private static void collect() {
         // 创建SparkConf和JavaSparkContext
-        SparkConf conf = new SparkConf().setAppName("reduce").setMaster("local");
+        SparkConf conf = new SparkConf().setAppName("collect").setMaster("local");
         JavaSparkContext sc = new JavaSparkContext(conf);
 
-        // 有一个集合，里面有1到10，10个数字，现在要对10个数字进行累加
         List<Integer> numberList = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         JavaRDD<Integer> numbers = sc.parallelize(numberList);
 
@@ -72,12 +77,99 @@ public class ActionOperation {
         // 不用foreach action操作，在远程集群上遍历rdd中的元素
         // 而使用collect操作，将分布在远程集群上的doubleNumbers RDD的数据拉取到本地
         // 这种方式，一般不建议使用，因为如果rdd中的数据量比较大的话，比如超过1万条
-            // 那么性能会比较差，因为要从远程走大量的网络传输，将数据获取到本地
-            // 此外，除了性能差，还可能在rdd中数据量特别大的情况下，发生oom异常，内存溢出
+        // 那么性能会比较差，因为要从远程走大量的网络传输，将数据获取到本地
+        // 此外，除了性能差，还可能在rdd中数据量特别大的情况下，发生oom异常，内存溢出
         // 因此，通常还是推荐使用foreach action 操作，来对最终的rdd元素进行处理
         List<Integer> doubleNumberList = doubleNumbers.collect();
         for (Integer num : doubleNumberList) {
             System.out.println(num);
+        }
+
+        sc.close();
+    }
+
+    private static void count() {
+        // 创建SparkConf和JavaSparkContext
+        SparkConf conf = new SparkConf().setAppName("count").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        List<Integer> numberList = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        JavaRDD<Integer> numbers = sc.parallelize(numberList);
+
+        // 对rdd使用count操作，统计它有多少个元素
+        long count = numbers.count();
+        System.out.println(count);
+
+
+        sc.close();
+    }
+
+    private static void take() {
+        // 创建SparkConf和JavaSparkContext
+        SparkConf conf = new SparkConf().setAppName("take").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        List<Integer> numberList = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        JavaRDD<Integer> numbers = sc.parallelize(numberList);
+
+        // take操作，与collect类似，也是从远程集群上，获取rdd的数据
+        // 但是collect是获取rdd的所有数据，take只是获取前n个数据
+        List<Integer> top3Numbers = numbers.take(3);
+
+        for (int num : top3Numbers) {
+            System.out.println(num);
+        }
+
+        sc.close();
+    }
+
+    private static void saveAsTextFile() {
+        // 创建SparkConf和JavaSparkContext
+        SparkConf conf = new SparkConf().setAppName("saveAsTextFile").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        List<Integer> numberList = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
+        JavaRDD<Integer> numbers = sc.parallelize(numberList);
+
+        // 使用map操作将集合里的所有数字乘以2
+        JavaRDD<Integer> doubleNumbers = numbers.map(
+                new Function<Integer, Integer>() {
+                    @Override
+                    public Integer call(Integer v) throws Exception {
+                        return v * 2;
+                    }
+                }
+        );
+
+        // 直接将rdd中的数据，保存在HDFS文件中
+        // 但是要注意，我们这里只能指定文件夹，也就是目录
+        // 那么实际上会保存为目录中的/double_number.txt/part-00000
+        doubleNumbers.saveAsTextFile("hdfs://.../double_number.txt");
+
+        sc.close();
+    }
+
+    private static void countByKey() {
+        SparkConf conf = new SparkConf().setAppName("countByKey").setMaster("local");
+        JavaSparkContext sc = new JavaSparkContext(conf);
+
+        // 模拟集合
+        List<Tuple2<String, String>> scoreList = Arrays.asList(
+                new Tuple2<>("class1", "leo"),
+                new Tuple2<>("class2", "jack"),
+                new Tuple2<>("class1", "marry"),
+                new Tuple2<>("class2", "tom" ),
+                new Tuple2<>("class2", "david" )
+        );
+
+        // 并行化集合，创建JavaPairRDD
+        JavaPairRDD<String, String> students = sc.parallelizePairs(scoreList);
+
+        // 对rdd应用countByKey，统计每个班级的学生人数，也就是统计每个key对应的元素个数
+        // countByKey返回的类型是 Map<String, Long>
+        Map<String, Long> studentCounts = students.countByKey();
+        for (Map.Entry<String, Long> studentCount : studentCounts.entrySet()) {
+            System.out.println(studentCount.getKey() + ": " + studentCount.getValue());
         }
 
         sc.close();
