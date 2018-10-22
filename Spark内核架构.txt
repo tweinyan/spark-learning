@@ -1,0 +1,11 @@
+1. Application
+2. spark-submit
+3. Driver
+4. SparkContext
+5. Master
+6. Worker
+7. Executor
+8. Job
+9. DAGScheduler
+10. TaskScheduler
+11. ShuffleMap Task and Result Task
