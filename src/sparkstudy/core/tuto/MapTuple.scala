@@ -47,7 +47,7 @@ object MapTuple {
 
 
     // 遍历map的entrySet
-    for ((key, vlaue) <- ages) println(key + " " + value)
+    for ((key, value) <- ages) println(key + " " + value)
 
     // 遍历map的key
     for (key <- ages.keySet) println(key)

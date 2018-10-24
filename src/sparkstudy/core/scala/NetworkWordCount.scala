@@ -4,7 +4,6 @@ package sparkstudy.core.scala
   * Created by tweinyan on 2018/7/12.
   */
 import org.apache.spark.SparkConf
-import org.apache.spark.storage.StorageLevel
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 
