@@ -1,0 +1,64 @@
+Scala中，让子类继承父类，与Java一样，也是使用extends关键字
+继承就代表，子类可以从父类继承父类的field和method；然后子类可以在自己内部放入父类
+所没有，子类特有的field和method；使用继承可以有效复用代码
+子类可以覆盖父类的field和method；但是如果父类用final修饰，field和method用final修饰，
+则该类是无法被继承的，field和method是无法覆盖的
+
+class Person {
+  private var name = "leo"
+  def getName = name
+}
+
+class Student extends Person {
+  private var score = "A"
+  def getScore = score
+}
+
+override和super
+Scala中，如果子类要覆盖一个父类中的非抽象方法，则必须使用override关键字
+override关键字可以帮助我们尽早发现代码里的错误，比如：override修饰的父类方法的
+方法名拼写错了；比如要覆盖的父类方法的参数写错了；等等
+此外，在子类覆盖父类方法之后，如果我们在子类中就是要调用父类的被覆盖的方法呢"
+就可以使用super关键字，显示地指定要调用父类的方法
+
+class Person {
+  private var name = "leo"
+  def getName = name
+}
+
+class Student extends Person {
+  private var score = "A"
+  def getScore = score
+  override def getName = "Hi, I'm" + super.getName
+}
+
+override field
+
+Scala中，子类可以覆盖父类的val field，而且子类val field还可以覆盖父类的val field的
+getter方法；只要在子类中使用override关键字即可
+
+class Person {
+  val name: String = "Person"
+  def age: Int = 0
+}
+
+class Student extends Person {
+  override val name: String = "leo"
+  override val age: Int = 30
+}
+
+父类和子类的类型判断和转换
+isInstanceOf和asInstanceOf
+如果我们创建了子类的对象，但是又将其赋予了父类类型的变量。则在后续的程序中，我们又需要
+将父类类型的变量转换为子类类型的变量，应该如何做？
+首先，需要使用isInstanceOf判断对象是否是指定类的对象，如果是的话，则可以使用
+asInstanceOf将对象转换为指定类型
+注意，如果对象是null，则isInstanceOf一定返回false, asInstanceOf一定返回null
+注意，如果没有用isInstanceOf先判断对象是否为指定类的实例，就直接用asInstanceOf
+转换，则可能会抛出异常
+class Person
+class Student extends Person
+val p: Person = new Student
+var s: Student = null
+
+if (p.isInstanceOf[Student]) s = p.asInstanceOf[Student]
