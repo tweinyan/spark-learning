@@ -22,7 +22,7 @@ object MapTuple {
 
     // 获取指定key对应的value，如果key不存在，会报错
     val leoAge = ages("Leo")
-//    val leoAge = ages("leo")
+    //    val leoAge = ages("leo")
 
     // 使用contains函数
     val age = if (ages.contains("leo")) ages("leo") else 0
@@ -39,11 +39,11 @@ object MapTuple {
 
     // 更新不可变的map
     val r = ages + ("Mike" -> 36, "Tom" -> 40)
-//    val r = ages + ("Leo" -> 31)
+    //    val r = ages + ("Leo" -> 31)
     // 移除不可变map的元素
     val r1 = ages - "Tom"
-//    println(r)
-//    println(r1)
+    //    println(r)
+    //    println(r1)
 
 
     // 遍历map的entrySet
@@ -57,5 +57,19 @@ object MapTuple {
 
     // 生成新map，反转key和value
     for ((key, value) <- ages) yield (value, key)
+
+    // SortedMap可以自动对Map的key排序
+    val ages4 = scala.collection.immutable.SortedMap(
+      "leo" -> 30,
+      "alice" -> 15,
+      "jen" -> 25
+    )
+
+    // LinkedHashMap可以记住插入entry的顺序
+    val agesMap = new scala.collection.mutable.LinkedHashMap[String, Int]
+    agesMap("leo") = 30
+    agesMap("alice") = 15
+    agesMap("jen") = 25
+
   }
 }
