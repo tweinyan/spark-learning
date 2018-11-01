@@ -1,7 +1,7 @@
 package sparkstudy.core.examples
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.ml.feature.{HasingTF, IDF, Tokenizer}
+//import org.apache.spark.ml.feature.{HasingTF, IDF, Tokenizer}
 
 /**
   * Created by tweinyan on 2018/10/26.
@@ -21,7 +21,7 @@ object TfIdfExample {
       (1.0, "Logistic regression models are neat")
     )).toDF("label", "sentence")
 
-    val tokenizer = new Tokenizer
+//    val tokenizer = new Tokenizer
 
   }
 }
