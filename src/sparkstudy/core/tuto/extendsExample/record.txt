@@ -99,11 +99,74 @@ protected
 
 class Person {
   protected var name: String = "leo"
-  protected[this] var hoby: String = "game"
+  protected[this] var hobby: String = "game"
+  //protected var hobby: String = "game"
 }
 class Student extends Person {
   def sayHello = println("Hello," + name)
   def makeFriends(s: Student) {
     println("my hoby is" + hobby + ", your hobby is " + s.hobby)
   }
+}
+
+
+调用父类的constructor
+// Scala中，每个类可以有一个主constructor和任意多个辅助constructor，而每个
+辅助constructor的第一行必须是调用其他辅助constructor或是主constructor；因此子类的
+辅助constructor是一定不可能直接调用父类的constructor的
+// 只能在子类的主constructor中调用父类的constructor，以下这种语法，就是通过子类的主构造
+函数来调用父类的构造函数
+// 注意！如果是父类中接收的参数，比如name和age，子类中接收时，就不要用任何val或
+var来修饰了，否则会认为是子类要覆盖父类的field
+class Person(val name: String, val age: Int)
+class Student(name: String, age: Int, var score: Double) extends Person(name, age) {
+  def this(name: String) {
+    this(name, 0, 0)
+  }
+  def this(age: Int) {
+    this("leo", age, 0)
+  }
+}
+
+
+匿名子类（java中的匿名内部类）
+// 在Scala中，匿名子类是非常常见，而且非常强大的，spark的源码中也大量使用了这种匿名子类
+// 匿名子类，也就是说， 可以定义一个类的没有名称的子类，并直接创建其对象，然后将对象的
+引用赋予一个变量，之后甚至可以将匿名子类的对象传递给其他函数
+class Person(protected val name: String) {
+  def sayHello = "Hello, I'm " + name
+}
+val p = new Person("leo") {
+  override def sayHello = "Hi, I'm " + name
+}
+def greeting(p: Person {def sayHello: String}) {
+  println(p.sayHello)
+}
+
+
+抽象类
+// 如果在父类中，有某些方法无法立即实现，而需要依赖不同的子类来覆盖，重写实现自己不同的
+方法实现。此时可以将父类中的这些方法不给出具体的实现，只有方法签名，这种方法就是抽象方法
+// 而一个类中如果有你一个抽象方法，那么类就必须用abstract来声明为抽象类，此时抽象类
+是不可以实例化的
+// 在子类中覆盖抽象类的抽象方法时，不需要使用override关键字
+abstract class Person(val name: String) {
+  def sayHello: Unit
+}
+class Student(name: String) extends Person(name) {
+  def sayHello: Unit = println("hello" + name)
+}
+
+
+抽象field
+// 如果在父类中，定义了field，但是没有给出初始值，则此field为抽象field
+// 抽象field意味着，scala会根据自己的规则，为var或val类型的field生成对应的getter
+和setter方法，但是父类中是没有该field的
+// 子类必须覆盖field，以定义自己的具体field，并且覆盖抽象field，不需要使用override关键字
+abstract class Person {
+  val name: String
+}
+
+class Student extends Person {
+  val name: String = "leo"
 }
