@@ -128,3 +128,29 @@ implicit def getActionListener(actionProcessFunc: (ActionEvent) => Unit) = new A
 }
 
 button.addActionListener((event: ActionEvent) => println("Click Me!!!"))
+
+--------------------------------------------------
+Curring函数
+// curring函数，指的是将原来接收两个参数的一个函数，转换为两个函数，
+第一个函数接收原先的第一个参数，然后返回接收原先第二个参数的第二个函数
+// 在函数调用的过程中，就变为了两个函数连续调用的形式
+
+def sum(a: Int, b: Int) = a + b
+sum(1, 1)
+
+def sum2(a: Int) = (b: Int) => a + b
+sum2(1)(1)
+
+def sum3(a: Int)(b: Int) = a + b
+
+--------------------------------------------------
+return
+// scala中，不需要使用return来返回函数的值，函数最后一行语句的值，就是函数的返回值。在scala中，
+return用于在匿名函数中返回值给包含匿名函数的带名函数，并作为带名函数的返回值
+
+def greeting(name: String) = {
+  def sayHello(name: String): String = {
+    return "Hello, " + name
+  }
+  sayHello(name)
+}
