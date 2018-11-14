@@ -1,0 +1,131 @@
+Scala的模式匹配除了可以对值进行匹配之外，还可以
+对类型进行匹配，对Array和List的元素情况进行匹配，
+对case class进行匹配，甚至对有值或没值(Option)进行匹配
+
+1. 模式匹配基础语法(案例：成绩评价)
+2. 对类型进行模式匹配(案例：异常处理)
+3. 对Array和List的进行模式匹配(案例：对朋友打招呼)
+4. case class与模式匹配(案例：学校门禁)
+5. Option与模式匹配(案例：成绩查询)
+
+--------------------------------------------------
+
+// 成绩评价
+def judgeGrade(grade: String) {
+  grade match {
+    case "A" => println("Excellent")
+    case "B" => println("Good")
+    case "C" => println("Just so so")
+    case _ => println("you need work harder")
+  }
+}
+
+在模式匹配中使用if守卫
+// Scala的模式匹配语法，有一个特点在于，可以在case后的条件判断中，
+不仅仅只是提供一个值，而是可以在值后面再加一个if守卫，进行双重过滤
+
+def judgeGrade(name: String, grade: String) {
+  grade match {
+    case "A" => println(name + ", you are excellent")
+    case "B" => println(name + ", you are good")
+    case "C" => println(name + ", you are just so so")
+    case _ if name == "leo" => println(name + ", you are a good boy, come on")
+    case _ => println("you need to work harder")
+  }
+}
+
+
+在模式匹配中进行变量赋值
+// Scala的模式匹配语法，有一个特点在于，可以将模式匹配的默认情况，下划线，替换
+为一个变量名，此时模式匹配语法会将要匹配的值赋值给这个变量，从而可以在后面的处理
+语句中使用要匹配的值
+
+def judgeGrade(name: String, grade: String) {
+  grade match {
+    case "A" => println(name + ", you are excellent")
+    case "B" => println(name + ", you are good")
+    case "C" => println(name + ", you are just so so")
+    case badGrade => println("you got " + badGrade + " grade, I hope that you can get C grade next time!")
+  }
+}
+
+--------------------------------------------------
+对类型进行模式匹配
+// Scala的模式匹配一个强大之处就在于，可以直接匹配类型，而不是值!!这点是
+java的switch case绝对做不到的
+
+// 案例：异常处理
+import java.io._
+
+def processException(e: Exception) {
+  e match {
+    case e1: IllegalArgumentException => println("you have illegal arguments! exception is: " + e1)
+    case e2: FileNotFoundException => println("cannot find the file you need read or write! exception is: " + e2)
+    case e3: IOException => println("you got an error while you were doing IO operation! exception is: " + e3)
+    case _: Exception => println("cannot know which exception you have!")
+  }
+}
+
+--------------------------------------------------
+对Array和List进行模式匹配
+// 对Array进行模式匹配，分别可以匹配带有指定元素的数组，带有指定个数元素的数组，以某元素打头的数组
+// 对List进行模式匹配，与Array类似，但是需要使用List特有的::操作符
+
+// 案例：对朋友打招呼
+def greeting(arr: Array[String]) {
+  arr match {
+    case Array(":eo") => println("Hi, Leo!")
+    case Array(girl1, girl2, girl3) => println("Hi, girls, nice to meet you. " + girl1 + " and " + girl2 + " and " + girl3)
+    case Array("Leo", _*) => println("Hi, Leo, please introduce your friends to me.")
+    case _ => println("hey, who are you?")
+  }
+}
+
+def greeting(list: List[String]) {
+  list match {
+    case "Leo"::Nil => println("Hi, Leo!")
+    case girl1::girl2::girl3::Nil => println("Hi, girls, nice to meet you. " + girl1 + " and " + girl2 + " and " + girl3)
+    case "Leo"::tail => println("Hi, Leo, please introduce your friends to me.")
+    case _ => println("hey, who are you?")
+  }
+}
+
+
+--------------------------------------------------
+case class与模式匹配
+// Scala中提供了一种特殊的类，用case class进行声明，中文也可称样例类。case class其实有点类似于Java中的JavaBean
+的概念。即只定义field，并且由Scala编译时自动提供getter和setter方法，但是没有method。
+// case class的主构造函数接收的参数通常不需要使用var或val修饰，Scala自动就会使用val修饰（但是如果你自己使用var修饰，那么还是
+会按照var来）
+// Scala自动为case class定义了伴生对象，也就是object，并且定义了apply()方法，该方法接收主构造函数中相同的参数，并返回
+case class对象
+
+// 案例：学校门禁
+class Person
+case class Teacher(name: String, subject: String) extends Person
+case class Student(name: String, classroom: String) extends Person
+
+def judgeIdentify(p: Person) {
+  p match {
+    case Teacher(name, subject) => println("Teacher, my name is " + name + ", subject is " + subject)
+    case Student(name, classroom) => println("Studnet, name is " + name + ", classroom is " + classroom)
+    case _ => println("Illegal access, please go out of the school!")
+  }
+}
+
+--------------------------------------------------
+Option与模式匹配
+// Scala有一种特殊的类型，叫做Option。Option有两种值，一种是Some，表示有值，一种是None，表示没有值
+// Option通常会用于模式匹配中，用于判断某个变量是有值还是没有值，这比nul来的更加简洁明了
+// Option的用法必须掌握，因为Spark源码中大量使用了Option，比如Some(a), None这种语法，因此必须
+看得懂Option模式匹配，才能够读懂spark源码
+
+// 案例：成绩查询
+val grades = Map("Leo" -> "A", "Jack" -> "B", "Jen" -> "C")
+def getGrade(name: String) {
+  val grade = grades.get(name)
+  grade match{
+    case Some(grade) => println("your grade is " + grade)
+    case None => println("Sorry, your grade information is not in the system")
+  }
+}
