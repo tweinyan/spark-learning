@@ -1,0 +1,91 @@
+1. 隐式转换（案例：特殊售票窗口）
+2. 使用隐式转换加强现有类型（案例：超人变身）
+3. 导入隐式转换函数
+4. 隐式转换的发生时机
+5. 隐式参数
+
+--------------------------------------------------
+隐式转换
+// 要实现隐式转换，只要程序可见的范围内定义隐式转换函数即可。Scala会自动使用
+隐式转换函数。隐式转换函数与普通函数唯一的区别就是，要以implicit开头，而且
+最好要定义函数返回类型
+
+// 案例：特殊售票窗口（只接受特殊人群，比如学生，老人等）
+class SpecialPerson(val name: String)
+class Student(val name: String)
+class Older(val name: String)
+
+implicit def object2SpecialPerson(obj: Object): SpecialPerson = {
+  if(obj.getClass == classOf[Student]) {
+    val stu = obj.asInstanceOf[Student]
+    new SpecialPerson(stu.name)
+  }
+  else if (obj.getClass == classOf[Older]) {
+    val older = obj.asInstanceOf[Older]
+    new SpecialPerson(older.name)
+  }
+  else Nil
+}
+
+var ticketNumber = 0
+def buySpecialTicket(p: SpecialPerson) = {
+  ticketNumber += 1
+  "T-" + ticketNumber
+}
+
+
+--------------------------------------------------
+使用隐式转换加强现有类型
+
+// 隐式转换非常强大的一个功能，就是可以在不知不觉中加强现有类型的功能。也就是说，
+可以为某个类定义一个加强版的类，并定义互相之间的隐式转换，从而让源类在使用加强版的方法时，
+由Scala自动进行隐式转换为加强类，然后在调用该方法
+
+// 案例：超人变身
+
+class Man(val name: String)
+class Superman(val name: String) {
+  def emitLaser = println("emit a laser!")
+}
+
+implicit def man2superman(man: Man): Superman = new Superman(man.name)
+
+val leo = new Man("leo")
+leo.emitLaser
+
+--------------------------------------------------
+隐式转换的发生时机
+// 1. 调用某个函数，但是给函数传入的参数的类型，与函数定义的接收参数类型不匹配
+（案例：特殊售票窗口）
+// 2. 使用某个类型的对象，调用某个方法，而这个方法并不存在于该类型时（案例：超人变身）
+// 3. 使用某个类型的对象，调用某个方法，虽然该类型有这个方法，但是给方法传入的参数
+类型，与方法定义的接收参数的类型不匹配（案例：特殊售票窗口加强版）
+
+// 案例：特殊售票窗口加强版
+class TicketHouse {
+  val ticketNumber = 0
+  def buySpecialTicket(p: SpecialPerson) = {
+    ticketNumber += 1
+    "T-" + ticketNumber
+  }
+}
+
+--------------------------------------------------
+隐式参数
+
+// 所谓的隐式参数，指的是在函数或者方法中，定义一个用implicit修饰的参数，此时Scala
+会尝试找到一个指定类型的，用implicit修饰的对象，即隐式值，并注入参数。
+// Scala会在两个范围内查找：一种是当前作用域内可见的val或var定义的隐式变量；一种是隐式
+参数类型的伴生对象内的隐式值。
+
+// 案例：考试签到
+class SignPen {
+  def write(content: String) = println(content)
+}
+
+implicit val signPen = new SignPen
+
+def signForExam(name: String)(implicit signPen: SignPen) {
+  signPen.write(name + " come to exam in time.")
+}
+
